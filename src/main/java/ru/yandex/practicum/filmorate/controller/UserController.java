@@ -36,11 +36,19 @@ public class UserController {
     }
 
     private void validate(User user) {
+        validateNotNull(user);
         validateEmail(user);
         validateLogin(user);
         validateName(user);
         validateBirthday(user);
         log.info("Валидация пользователя пройдена успешно");
+    }
+
+    private void validateNotNull(User user) {
+        if(user == null){
+            log.warn("Ошибка валидации пользователя");
+            throw new ValidationException("Пользователь не может быть null");
+        }
     }
 
     private void validateEmail(User user) {

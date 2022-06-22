@@ -179,6 +179,11 @@ class UserControllerTest {
                                 .build())
                         .expectedMessage("Дата рождения не может быть в будущем")
                         .checkName("Дата рождения из будущего")
+                        .build(),
+                TestData.builder()
+                        .user(null)
+                        .expectedMessage("Пользователь не может быть null")
+                        .checkName("Пользователь is null")
                         .build()
         );
     }

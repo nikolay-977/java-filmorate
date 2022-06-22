@@ -162,6 +162,11 @@ class FilmControllerTest {
                                 .build())
                         .expectedMessage("Продолжительность фильма должна быть положительной")
                         .checkName("Нулевая продолжительность фильма")
+                        .build(),
+                TestData.builder()
+                        .film(null)
+                        .expectedMessage("Фильм не может быть null")
+                        .checkName("Фильм is null")
                         .build()
         );
     }

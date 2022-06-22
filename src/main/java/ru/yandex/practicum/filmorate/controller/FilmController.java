@@ -36,10 +36,18 @@ public class FilmController {
     }
 
     private void validate(Film film) {
+        validateNotNull(film);
         validateName(film);
         validateDescription(film);
         validateReleaseDate(film);
         validateDuration(film);
+    }
+
+    private void validateNotNull(Film film) {
+        if (film == null) {
+            log.warn("Ошибка валидации фильма");
+            throw new ValidationException("Фильм не может быть null");
+        }
     }
 
     private void validateName(Film film) {
