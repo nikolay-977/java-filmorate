@@ -33,7 +33,6 @@ class FilmControllerTest {
         FilmController filmController = new FilmController();
 
         Film filmOne = Film.builder()
-                .id(1)
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
@@ -41,19 +40,18 @@ class FilmControllerTest {
                 .build();
 
         Film filmTwo = Film.builder()
-                .id(2)
                 .name(NAME_SECOND)
                 .description(DESCRIPTION_SECOND)
                 .releaseDate(RELEASE_DATE_SECOND)
                 .duration(DURATION_SECOND)
                 .build();
 
-        HashMap<Integer, Film> expectedFilms = new HashMap<>();
-        expectedFilms.put(filmOne.getId(), filmOne);
-        expectedFilms.put(filmTwo.getId(), filmTwo);
+        Film filmOneCreated = filmController.createFilm(filmOne);
+        Film filmTwoCreated = filmController.createFilm(filmTwo);
 
-        filmController.createFilm(filmOne);
-        filmController.createFilm(filmTwo);
+        HashMap<Integer, Film> expectedFilms = new HashMap<>();
+        expectedFilms.put(filmOneCreated.getId(), filmOneCreated);
+        expectedFilms.put(filmTwoCreated.getId(), filmTwoCreated);
 
         HashMap<Integer, Film> actualFilms = filmController.getAllFilms();
         assertEquals(expectedFilms, actualFilms);
@@ -64,7 +62,6 @@ class FilmControllerTest {
         FilmController filmController = new FilmController();
 
         Film film = Film.builder()
-                .id(1)
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
@@ -81,7 +78,6 @@ class FilmControllerTest {
         FilmController filmController = new FilmController();
 
         Film film = Film.builder()
-                .id(1)
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
@@ -93,6 +89,29 @@ class FilmControllerTest {
         Film filmUpdated = filmController.updateFilm(filmCreated);
 
         assertEquals(filmCreated, filmUpdated);
+    }
+
+    @Test
+    void updateWrongFilm() {
+        FilmController filmController = new FilmController();
+
+        Film film = Film.builder()
+                .name(NAME_FIRST)
+                .description(DESCRIPTION_FIRST)
+                .releaseDate(RELEASE_DATE_FIRST)
+                .duration(DURATION_FIRST)
+                .build();
+
+        Film filmCreated = filmController.createFilm(film);
+        filmCreated.setName(NAME_FIRST + "_updated");
+        filmCreated.setId(-1);
+
+        final ValidationException[] validationException = new ValidationException[1];
+        assertAll(
+                () -> validationException[0] = assertThrows(ValidationException.class, () -> filmController.updateFilm(filmCreated)),
+                () -> assertEquals("Фильм c id: -1 не существует", validationException[0].getMessage(), MessageFormat.format("Проверка сообщения об ошибке для кейса: {0}", "id: -1"))
+        );
+
     }
 
     @ParameterizedTest
@@ -110,7 +129,6 @@ class FilmControllerTest {
         return Stream.of(
                 TestData.builder()
                         .film(Film.builder()
-                                .id(1)
                                 .name("")
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(RELEASE_DATE_FIRST)
@@ -121,7 +139,6 @@ class FilmControllerTest {
                         .build(),
                 TestData.builder()
                         .film(Film.builder()
-                                .id(1)
                                 .name(NAME_FIRST)
                                 .description(DESCRIPTION_FIRST + "i")
                                 .releaseDate(RELEASE_DATE_FIRST)
@@ -132,7 +149,6 @@ class FilmControllerTest {
                         .build(),
                 TestData.builder()
                         .film(Film.builder()
-                                .id(1)
                                 .name(NAME_FIRST)
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(LocalDate.of(1895, 12, 27))
@@ -143,7 +159,6 @@ class FilmControllerTest {
                         .build(),
                 TestData.builder()
                         .film(Film.builder()
-                                .id(1)
                                 .name(NAME_FIRST)
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(RELEASE_DATE_FIRST)
@@ -154,7 +169,6 @@ class FilmControllerTest {
                         .build(),
                 TestData.builder()
                         .film(Film.builder()
-                                .id(1)
                                 .name(NAME_FIRST)
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(RELEASE_DATE_FIRST)

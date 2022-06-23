@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.HashMap;
 
@@ -12,6 +13,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    private static Integer nextId = 0;
     private final HashMap<Integer, User> users = new HashMap<>();
 
     @GetMapping()
@@ -22,17 +24,22 @@ public class UserController {
     @PostMapping()
     public User createUser(@RequestBody User user) {
         validate(user);
+        user.setId(++nextId);
         users.put(user.getId(), user);
         log.info("Пользователь добавлен");
-        return user;
+        return users.get(user.getId());
     }
 
     @PutMapping()
     public User updateUser(@RequestBody User user) {
         validate(user);
+        if(!users.containsKey(user.getId())){
+            log.warn("Ошибка валидации id пользователя");
+            throw new ValidationException(MessageFormat.format("Пользователь c id: {0} не существует", user.getId()));
+        }
         users.put(user.getId(), user);
         log.info("Пользователь обновлен");
-        return user;
+        return users.get(user.getId());
     }
 
     private void validate(User user) {

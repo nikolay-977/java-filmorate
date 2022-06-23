@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.HashMap;
 
@@ -12,6 +13,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
+    private static Integer nextId = 0;
     private final HashMap<Integer, Film> films = new HashMap<>();
 
     @GetMapping()
@@ -22,17 +24,22 @@ public class FilmController {
     @PostMapping()
     public Film createFilm(@RequestBody Film film) {
         validate(film);
+        film.setId(++nextId);
         films.put(film.getId(), film);
         log.info("Фильм добавлен");
-        return film;
+        return films.get(film.getId());
     }
 
     @PutMapping()
     public Film updateFilm(@RequestBody Film film) {
         validate(film);
+        if(!films.containsKey(film.getId())){
+            log.warn("Ошибка валидации id фильма");
+            throw new ValidationException(MessageFormat.format("Фильм c id: {0} не существует", film.getId()));
+        }
         films.put(film.getId(), film);
         log.info("Фильм обновлен");
-        return film;
+        return films.get(film.getId());
     }
 
     private void validate(Film film) {

@@ -112,6 +112,30 @@ class UserControllerTest {
         assertEquals(userCreated, userUpdated);
     }
 
+    @Test
+    void updateWrongUser() {
+        UserController userController = new UserController();
+
+        User userFirst = User.builder()
+                .id(1)
+                .email(E_MAIL_FIRST)
+                .login(LOGIN_FIRST)
+                .name(NAME_FIRST)
+                .birthday(BIRTHDAY_FIRST)
+                .build();
+
+        User userCreated = userController.createUser(userFirst);
+        userCreated.setName(NAME_FIRST + "_updated");
+        userCreated.setId(-1);
+
+        final ValidationException[] validationException = new ValidationException[1];
+        assertAll(
+                () -> validationException[0] = assertThrows(ValidationException.class, () -> userController.updateUser(userCreated)),
+                () -> assertEquals("Пользователь c id: -1 не существует", validationException[0].getMessage(), MessageFormat.format("Проверка сообщения об ошибке для кейса: {0}", "id: -1"))
+        );
+    }
+
+
     @ParameterizedTest
     @MethodSource("testDataProvider")
     void validateUserTest(TestData testData) {
