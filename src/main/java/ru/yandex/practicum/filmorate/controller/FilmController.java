@@ -17,6 +17,7 @@ import java.util.List;
 public class FilmController {
     private static Integer nextId = 0;
     private final HashMap<Integer, Film> films = new HashMap<>();
+    private final static LocalDate EARLIEST_DATE = LocalDate.of(1895, 12, 28);
 
     @GetMapping()
     public List<Film> getAllFilms() {
@@ -74,7 +75,7 @@ public class FilmController {
     }
 
     private void validateReleaseDate(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+        if (film.getReleaseDate().isBefore(EARLIEST_DATE)) {
             log.warn("Ошибка валидации даты релиза фильма");
             throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года");
         }
