@@ -7,7 +7,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -17,8 +19,8 @@ public class FilmController {
     private final HashMap<Integer, Film> films = new HashMap<>();
 
     @GetMapping()
-    public HashMap<Integer, Film> getAllFilms() {
-        return films;
+    public List<Film> getAllFilms() {
+        return new ArrayList<>(films.values());
     }
 
     @PostMapping()
@@ -33,11 +35,11 @@ public class FilmController {
     @PutMapping()
     public Film updateFilm(@RequestBody Film film) {
         validate(film);
-        if(!films.containsKey(film.getId())){
+        if (!films.containsKey(film.getId())) {
             log.warn("Ошибка валидации id фильма");
             throw new ValidationException(MessageFormat.format("Фильм c id: {0} не существует", film.getId()));
         }
-        films.put(film.getId(), film);
+        films.replace(film.getId(), film);
         log.info("Фильм обновлен");
         return films.get(film.getId());
     }

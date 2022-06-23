@@ -13,7 +13,8 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +34,6 @@ class UserControllerTest {
         UserController userController = new UserController();
 
         User userFirst = User.builder()
-                .id(1)
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name(NAME_FIRST)
@@ -41,21 +41,18 @@ class UserControllerTest {
                 .build();
 
         User userSecond = User.builder()
-                .id(2)
                 .email(E_MAIL_SECOND)
                 .login(LOGIN_SECOND)
                 .name(NAME_SECOND)
                 .birthday(BIRTHDAY_SECOND)
                 .build();
 
-        HashMap<Integer, User> expectedUsers = new HashMap<>();
-        expectedUsers.put(userFirst.getId(), userFirst);
-        expectedUsers.put(userSecond.getId(), userSecond);
+        User userCreatedFirst = userController.createUser(userFirst);
+        User userCreatedSecond = userController.createUser(userSecond);
 
-        userController.createUser(userFirst);
-        userController.createUser(userSecond);
+        List<User> expectedUsers = new ArrayList<>(List.of(userCreatedFirst, userCreatedSecond));
 
-        HashMap<Integer, User> actualUsers  = userController.getAllUsers();
+        List<User> actualUsers = userController.getAllUsers();
         assertEquals(expectedUsers, actualUsers);
     }
 
@@ -64,7 +61,6 @@ class UserControllerTest {
         UserController userController = new UserController();
 
         User user = User.builder()
-                .id(1)
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name(NAME_FIRST)
@@ -81,7 +77,6 @@ class UserControllerTest {
         UserController userController = new UserController();
 
         User user = User.builder()
-                .id(1)
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name("")
@@ -97,16 +92,18 @@ class UserControllerTest {
     void updateUser() {
         UserController userController = new UserController();
 
-        User userFirst = User.builder()
-                .id(1)
+        User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name(NAME_FIRST)
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(userFirst);
-        userCreated.setName(NAME_FIRST + "_updated");
+        User userCreated = userController.createUser(user);
+        userCreated.setLogin(LOGIN_SECOND);
+        userCreated.setEmail(E_MAIL_SECOND);
+        userCreated.setName(NAME_SECOND);
+        userCreated.setBirthday(BIRTHDAY_SECOND);
         User userUpdated = userController.updateUser(userCreated);
 
         assertEquals(userCreated, userUpdated);
@@ -116,17 +113,20 @@ class UserControllerTest {
     void updateWrongUser() {
         UserController userController = new UserController();
 
-        User userFirst = User.builder()
-                .id(1)
+        User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name(NAME_FIRST)
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(userFirst);
+        User userCreated = userController.createUser(user);
         userCreated.setName(NAME_FIRST + "_updated");
         userCreated.setId(-1);
+        userCreated.setLogin(LOGIN_SECOND);
+        userCreated.setEmail(E_MAIL_SECOND);
+        userCreated.setName(NAME_SECOND);
+        userCreated.setBirthday(BIRTHDAY_SECOND);
 
         final ValidationException[] validationException = new ValidationException[1];
         assertAll(
@@ -151,7 +151,6 @@ class UserControllerTest {
         return Stream.of(
                 TestData.builder()
                         .user(User.builder()
-                                .id(1)
                                 .email("")
                                 .login(LOGIN_FIRST)
                                 .name(NAME_FIRST)
@@ -162,7 +161,6 @@ class UserControllerTest {
                         .build(),
                 TestData.builder()
                         .user(User.builder()
-                                .id(1)
                                 .email("test.ru")
                                 .login(LOGIN_FIRST)
                                 .name(NAME_FIRST)
@@ -173,7 +171,6 @@ class UserControllerTest {
                         .build(),
                 TestData.builder()
                         .user(User.builder()
-                                .id(1)
                                 .email(E_MAIL_FIRST)
                                 .login("")
                                 .name(NAME_FIRST)
@@ -184,7 +181,6 @@ class UserControllerTest {
                         .build(),
                 TestData.builder()
                         .user(User.builder()
-                                .id(1)
                                 .email(E_MAIL_FIRST)
                                 .login(LOGIN_FIRST + " ")
                                 .name(NAME_FIRST)
@@ -195,7 +191,6 @@ class UserControllerTest {
                         .build(),
                 TestData.builder()
                         .user(User.builder()
-                                .id(1)
                                 .email(E_MAIL_FIRST)
                                 .login(LOGIN_FIRST)
                                 .name(NAME_FIRST)

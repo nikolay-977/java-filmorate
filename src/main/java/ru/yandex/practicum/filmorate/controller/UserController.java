@@ -7,7 +7,9 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -17,8 +19,8 @@ public class UserController {
     private final HashMap<Integer, User> users = new HashMap<>();
 
     @GetMapping()
-    public HashMap<Integer, User> getAllUsers() {
-        return users;
+    public List<User> getAllUsers() {
+        return new ArrayList<>(users.values());
     }
 
     @PostMapping()
@@ -37,7 +39,7 @@ public class UserController {
             log.warn("Ошибка валидации id пользователя");
             throw new ValidationException(MessageFormat.format("Пользователь c id: {0} не существует", user.getId()));
         }
-        users.put(user.getId(), user);
+        users.replace(user.getId(), user);
         log.info("Пользователь обновлен");
         return users.get(user.getId());
     }

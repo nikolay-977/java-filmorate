@@ -13,7 +13,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,11 +50,9 @@ class FilmControllerTest {
         Film filmOneCreated = filmController.createFilm(filmOne);
         Film filmTwoCreated = filmController.createFilm(filmTwo);
 
-        HashMap<Integer, Film> expectedFilms = new HashMap<>();
-        expectedFilms.put(filmOneCreated.getId(), filmOneCreated);
-        expectedFilms.put(filmTwoCreated.getId(), filmTwoCreated);
+        List<Film> expectedFilms = new ArrayList<>(List.of(filmOneCreated, filmTwoCreated));
 
-        HashMap<Integer, Film> actualFilms = filmController.getAllFilms();
+        List<Film> actualFilms = filmController.getAllFilms();
         assertEquals(expectedFilms, actualFilms);
     }
 
@@ -68,7 +67,7 @@ class FilmControllerTest {
                 .duration(DURATION_FIRST)
                 .build();
 
-        Film filmCreated =  filmController.createFilm(film);
+        Film filmCreated = filmController.createFilm(film);
 
         assertEquals(film, filmCreated);
     }
@@ -85,7 +84,10 @@ class FilmControllerTest {
                 .build();
 
         Film filmCreated = filmController.createFilm(film);
-        filmCreated.setName(NAME_FIRST + "_updated");
+        filmCreated.setName(NAME_SECOND);
+        filmCreated.setDescription(DESCRIPTION_SECOND);
+        filmCreated.setReleaseDate(RELEASE_DATE_SECOND);
+        filmCreated.setDuration(DURATION_SECOND);
         Film filmUpdated = filmController.updateFilm(filmCreated);
 
         assertEquals(filmCreated, filmUpdated);
@@ -103,8 +105,11 @@ class FilmControllerTest {
                 .build();
 
         Film filmCreated = filmController.createFilm(film);
-        filmCreated.setName(NAME_FIRST + "_updated");
         filmCreated.setId(-1);
+        filmCreated.setName(NAME_SECOND);
+        filmCreated.setDescription(DESCRIPTION_SECOND);
+        filmCreated.setReleaseDate(RELEASE_DATE_SECOND);
+        filmCreated.setDuration(DURATION_SECOND);
 
         final ValidationException[] validationException = new ValidationException[1];
         assertAll(
