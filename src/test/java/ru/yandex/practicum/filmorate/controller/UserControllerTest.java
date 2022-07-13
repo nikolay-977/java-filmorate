@@ -5,11 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -22,17 +27,29 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserControllerTest {
     private static final String E_MAIL_FIRST = RandomStringUtils.randomAlphabetic(10) + "@" + RandomStringUtils.randomAlphabetic(10) + ".com";
     private static final String E_MAIL_SECOND = RandomStringUtils.randomAlphabetic(12) + "@" + RandomStringUtils.randomAlphabetic(12) + ".com";
+    private static final String E_MAIL_COMMON = RandomStringUtils.randomAlphabetic(14) + "@" + RandomStringUtils.randomAlphabetic(14) + ".com";
     private static final String LOGIN_FIRST = RandomStringUtils.randomAlphabetic(10);
     private static final String LOGIN_SECOND = RandomStringUtils.randomAlphabetic(12);
+    private static final String LOGIN_COMMON = RandomStringUtils.randomAlphabetic(14);
     private static final String NAME_FIRST = RandomStringUtils.randomAlphabetic(10);
     private static final String NAME_SECOND = RandomStringUtils.randomAlphabetic(12);
+    private static final String NAME_COMMON = RandomStringUtils.randomAlphabetic(14);
     private static final LocalDate BIRTHDAY_FIRST = LocalDate.of(1988, 1, 1);
     private static final LocalDate BIRTHDAY_SECOND = LocalDate.of(1999, 12, 31);
+    private static final LocalDate BIRTHDAY_COMMON = LocalDate.of(1994, 6, 15);
+    private static UserStorage userStorage;
+    private static UserService userService;
+    private static UserController userController;
+
+    @BeforeEach
+    void init() {
+        userStorage = new InMemoryUserStorage();
+        userService = new UserService(userStorage);
+        userController = new UserController(userService);
+    }
 
     @Test
     void getAllUsers() {
-        UserController userController = new UserController();
-
         User userFirst = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -58,8 +75,6 @@ class UserControllerTest {
 
     @Test
     void createUser() {
-        UserController userController = new UserController();
-
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -73,9 +88,174 @@ class UserControllerTest {
     }
 
     @Test
-    void createUserWithEmptyName() {
-        UserController userController = new UserController();
+    void getUser() {
+        User user = User.builder()
+                .email(E_MAIL_FIRST)
+                .login(LOGIN_FIRST)
+                .name(NAME_FIRST)
+                .birthday(BIRTHDAY_FIRST)
+                .build();
 
+        User userCreated = userController.createUser(user);
+        User userGot = userController.getUser(userCreated.getId());
+
+        assertEquals(userCreated, userGot);
+    }
+
+    @Test
+    void addFriends() {
+        User user = User.builder()
+                .email(E_MAIL_FIRST)
+                .login(LOGIN_FIRST)
+                .name(NAME_FIRST)
+                .birthday(BIRTHDAY_FIRST)
+                .build();
+
+        User userCreated = userController.createUser(user);
+
+        User friend = User.builder()
+                .email(E_MAIL_SECOND)
+                .login(LOGIN_SECOND)
+                .name(NAME_SECOND)
+                .birthday(BIRTHDAY_SECOND)
+                .build();
+
+        User friendCreated = userController.createUser(friend);
+
+        userController.addFriends(userCreated.getId(), friendCreated.getId());
+
+        User userWithFriend = userController.getUser(userCreated.getId());
+
+        assertTrue(userWithFriend.getFriends().contains(friendCreated.getId()));
+    }
+
+    @Test
+    void removeFriends() {
+        User user = User.builder()
+                .email(E_MAIL_FIRST)
+                .login(LOGIN_FIRST)
+                .name(NAME_FIRST)
+                .birthday(BIRTHDAY_FIRST)
+                .build();
+
+        User userCreated = userController.createUser(user);
+
+        User friend = User.builder()
+                .email(E_MAIL_SECOND)
+                .login(LOGIN_SECOND)
+                .name(NAME_SECOND)
+                .birthday(BIRTHDAY_SECOND)
+                .build();
+
+        User friendCreated = userController.createUser(friend);
+
+        userController.addFriends(userCreated.getId(), friendCreated.getId());
+        userController.removeFriends(userCreated.getId(), friendCreated.getId());
+
+        User userWithFriend = userController.getUser(userCreated.getId());
+
+        assertTrue(userWithFriend.getFriends().isEmpty());
+    }
+
+    @Test
+    void getFriends() {
+        User user = User.builder()
+                .email(E_MAIL_FIRST)
+                .login(LOGIN_FIRST)
+                .name(NAME_FIRST)
+                .birthday(BIRTHDAY_FIRST)
+                .build();
+
+        User userCreated = userController.createUser(user);
+
+        User friend = User.builder()
+                .email(E_MAIL_SECOND)
+                .login(LOGIN_SECOND)
+                .name(NAME_SECOND)
+                .birthday(BIRTHDAY_SECOND)
+                .build();
+
+        User friendCreated = userController.createUser(friend);
+
+        userController.addFriends(userCreated.getId(), friendCreated.getId());
+        List<User> friends = userController.getFriends(userCreated.getId());
+
+        assertTrue(friends.contains(friendCreated));
+    }
+
+    @Test
+    void getCommonFriends() {
+        User user = User.builder()
+                .email(E_MAIL_FIRST)
+                .login(LOGIN_FIRST)
+                .name(NAME_FIRST)
+                .birthday(BIRTHDAY_FIRST)
+                .build();
+
+        User userCreated = userController.createUser(user);
+
+        User friend = User.builder()
+                .email(E_MAIL_SECOND)
+                .login(LOGIN_SECOND)
+                .name(NAME_SECOND)
+                .birthday(BIRTHDAY_SECOND)
+                .build();
+
+        User friendCreated = userController.createUser(friend);
+
+        User commonFriend = User.builder()
+                .email(E_MAIL_COMMON)
+                .login(LOGIN_COMMON)
+                .name(NAME_COMMON)
+                .birthday(BIRTHDAY_COMMON)
+                .build();
+
+        User commonFriendCreated = userController.createUser(commonFriend);
+
+        userController.addFriends(userCreated.getId(), commonFriendCreated.getId());
+        userController.addFriends(commonFriendCreated.getId(), friendCreated.getId());
+
+        List<User> friends = userController.getCommonFriends(userCreated.getId(), friendCreated.getId());
+
+        assertTrue(friends.contains(commonFriendCreated));
+    }
+
+    @Test
+    void getCommonFriendsEmpty() {
+        User user = User.builder()
+                .email(E_MAIL_FIRST)
+                .login(LOGIN_FIRST)
+                .name(NAME_FIRST)
+                .birthday(BIRTHDAY_FIRST)
+                .build();
+
+        User userCreated = userController.createUser(user);
+
+        User friend = User.builder()
+                .email(E_MAIL_SECOND)
+                .login(LOGIN_SECOND)
+                .name(NAME_SECOND)
+                .birthday(BIRTHDAY_SECOND)
+                .build();
+
+        User friendCreated = userController.createUser(friend);
+
+        User commonFriend = User.builder()
+                .email(E_MAIL_COMMON)
+                .login(LOGIN_COMMON)
+                .name(NAME_COMMON)
+                .birthday(BIRTHDAY_COMMON)
+                .build();
+
+        User commonFriendCreated = userController.createUser(commonFriend);
+
+        List<User> friends = userController.getCommonFriends(userCreated.getId(), friendCreated.getId());
+
+        assertFalse(friends.contains(commonFriendCreated));
+    }
+
+    @Test
+    void createUserWithEmptyName() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -90,8 +270,6 @@ class UserControllerTest {
 
     @Test
     void updateUser() {
-        UserController userController = new UserController();
-
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -111,35 +289,24 @@ class UserControllerTest {
 
     @Test
     void updateWrongUser() {
-        UserController userController = new UserController();
-
-        User user = User.builder()
+        User userWithWrongId = User.builder()
+                .id(-1L)
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name(NAME_FIRST)
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(user);
-        userCreated.setName(NAME_FIRST + "_updated");
-        userCreated.setId(-1);
-        userCreated.setLogin(LOGIN_SECOND);
-        userCreated.setEmail(E_MAIL_SECOND);
-        userCreated.setName(NAME_SECOND);
-        userCreated.setBirthday(BIRTHDAY_SECOND);
-
-        final ValidationException[] validationException = new ValidationException[1];
+        final NotFoundException[] notFoundExceptions = new NotFoundException[1];
         assertAll(
-                () -> validationException[0] = assertThrows(ValidationException.class, () -> userController.updateUser(userCreated)),
-                () -> assertEquals("Пользователь c id: -1 не существует", validationException[0].getMessage(), MessageFormat.format("Проверка сообщения об ошибке для кейса: {0}", "id: -1"))
+                () -> notFoundExceptions[0] = assertThrows(NotFoundException.class, () -> userController.updateUser(userWithWrongId)),
+                () -> assertEquals("Пользователь c id: -1 не существует", notFoundExceptions[0].getMessage(), MessageFormat.format("Проверка сообщения об ошибке для кейса: {0}", "id: -1"))
         );
     }
-
 
     @ParameterizedTest
     @MethodSource("testDataProvider")
     void validateUserTest(TestData testData) {
-        UserController userController = new UserController();
         final ValidationException[] validationException = new ValidationException[1];
         assertAll(
                 () -> validationException[0] = assertThrows(ValidationException.class, () -> userController.createUser(testData.getUser()), testData.checkName),
