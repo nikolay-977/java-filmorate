@@ -56,7 +56,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void getAllFilms() {
+    void getAllFilmsTest() {
         Film filmOne = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
@@ -81,7 +81,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void createFilm() {
+    void createFilmTest() {
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
@@ -95,7 +95,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void getFilm() {
+    void getFilmTest() {
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
@@ -110,7 +110,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void updateFilm() {
+    void updateFilmTest() {
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
@@ -129,7 +129,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void updateWrongFilm() {
+    void updateWrongFilmTest() {
         Film filmWithWrongId = Film.builder()
                 .id(-1L)
                 .name(NAME_SECOND)
@@ -146,7 +146,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void addLike() {
+    void addLikeTest() {
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
@@ -173,7 +173,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void removeLike() {
+    void removeLikeTest() {
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
@@ -200,7 +200,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void getPopularFilm() {
+    void getPopularFilmTest() {
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
@@ -228,7 +228,7 @@ class FilmControllerTest {
     }
 
     @Test
-    void getPopularFilmCountTwo() {
+    void getPopularFilmCountTwoTest() {
         Film filmOne = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)

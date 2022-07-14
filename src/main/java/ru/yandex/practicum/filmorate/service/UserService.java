@@ -96,21 +96,21 @@ public class UserService {
     }
 
     private void validateEmail(User user) {
-        if (user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null | user.getEmail().isEmpty() || !user.getEmail().contains("@")) {
             log.warn("Электронная почта не может быть пустой и должна содержать символ @");
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
         }
     }
 
     private void validateLogin(User user) {
-        if (user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
+        if (user.getLogin() == null | user.getLogin().isEmpty() || user.getLogin().contains(" ")) {
             log.warn("Логин не может быть пустым и содержать пробелы");
             throw new ValidationException("Логин не может быть пустым и содержать пробелы");
         }
     }
 
     private void validateName(User user) {
-        if (user.getName().isEmpty()) {
+        if (user.getName() == null | user.getName().isEmpty()) {
             log.info("Имя пользователя не указано");
             user.setName(user.getLogin());
         }

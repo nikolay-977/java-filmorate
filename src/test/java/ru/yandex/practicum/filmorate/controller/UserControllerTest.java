@@ -49,7 +49,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getAllUsers() {
+    void getAllUsersTest() {
         User userFirst = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -74,7 +74,7 @@ class UserControllerTest {
     }
 
     @Test
-    void createUser() {
+    void createUserTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -88,7 +88,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getUser() {
+    void getUserTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -103,7 +103,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addFriends() {
+    void addFriendsTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -130,7 +130,7 @@ class UserControllerTest {
     }
 
     @Test
-    void removeFriends() {
+    void removeFriendsTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -158,7 +158,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getFriends() {
+    void getFriendsTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -184,7 +184,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getCommonFriends() {
+    void getCommonFriendsTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -221,7 +221,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getCommonFriendsEmpty() {
+    void getCommonFriendsEmptyTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -255,7 +255,7 @@ class UserControllerTest {
     }
 
     @Test
-    void createUserWithEmptyName() {
+    void createUserWithEmptyNameTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -288,7 +288,7 @@ class UserControllerTest {
     }
 
     @Test
-    void updateWrongUser() {
+    void updateWrongUserTest() {
         User userWithWrongId = User.builder()
                 .id(-1L)
                 .email(E_MAIL_FIRST)

@@ -58,10 +58,14 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(Long id, Long otherId) {
-        HashSet<Long> friendsOfUser = users.get(id).getFriends();
-        HashSet<Long> friendsOfAnotherUser = users.get(otherId).getFriends();
-
         List<User> commonFriends = new ArrayList<>();
+
+        if (id != null && otherId != null) {
+            HashSet<Long> friendsOfUser = users.get(id).getFriends();
+            HashSet<Long> friendsOfAnotherUser = users.get(otherId).getFriends();
+        } else {
+            return commonFriends;
+        }
 
         if (friendsOfUser == null) return commonFriends;
 
@@ -79,7 +83,7 @@ public class InMemoryUserStorage implements UserStorage {
         User user = users.get(friendId);
         HashSet<Long> friends = user.getFriends();
 
-        if(friends == null){
+        if (friends == null) {
             friends = new HashSet<>();
         }
 

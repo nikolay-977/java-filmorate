@@ -104,7 +104,7 @@ public class FilmService {
     }
 
     private void validateName(Film film) {
-        if (film.getName().isEmpty()) {
+        if (film.getName() == null | film.getName().isEmpty()) {
             log.warn("Название не может быть пустым");
             throw new ValidationException("Название не может быть пустым");
         }
