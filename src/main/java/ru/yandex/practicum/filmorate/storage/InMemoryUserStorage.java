@@ -59,10 +59,12 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public List<User> getCommonFriends(Long id, Long otherId) {
         List<User> commonFriends = new ArrayList<>();
+        HashSet<Long> friendsOfUser;
+        HashSet<Long> friendsOfAnotherUser;
 
         if (id != null && otherId != null) {
-            HashSet<Long> friendsOfUser = users.get(id).getFriends();
-            HashSet<Long> friendsOfAnotherUser = users.get(otherId).getFriends();
+            friendsOfUser = users.get(id).getFriends();
+            friendsOfAnotherUser = users.get(otherId).getFriends();
         } else {
             return commonFriends;
         }
