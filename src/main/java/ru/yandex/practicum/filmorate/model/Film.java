@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 
 @Data
 @Builder
@@ -13,4 +14,6 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private Long duration;
+    private HashSet<Genre> genres;
+    private RatingMPA rating;
 }
