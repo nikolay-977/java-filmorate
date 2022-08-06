@@ -1,30 +1,32 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserControllerTest {
+    private final UserController userController;
+
     private static final String E_MAIL_FIRST = RandomStringUtils.randomAlphabetic(10) + "@" + RandomStringUtils.randomAlphabetic(10) + ".com";
     private static final String E_MAIL_SECOND = RandomStringUtils.randomAlphabetic(12) + "@" + RandomStringUtils.randomAlphabetic(12) + ".com";
     private static final String E_MAIL_COMMON = RandomStringUtils.randomAlphabetic(14) + "@" + RandomStringUtils.randomAlphabetic(14) + ".com";
@@ -37,54 +39,54 @@ class UserControllerTest {
     private static final LocalDate BIRTHDAY_FIRST = LocalDate.of(1988, 1, 1);
     private static final LocalDate BIRTHDAY_SECOND = LocalDate.of(1999, 12, 31);
     private static final LocalDate BIRTHDAY_COMMON = LocalDate.of(1994, 6, 15);
-    private static UserStorage userStorage;
-    private static UserService userService;
-    private static UserController userController;
 
-    @BeforeEach
-    void init() {
-        userStorage = new InMemoryUserStorage();
-        userService = new UserService(userStorage);
-        userController = new UserController(userService);
+
+    @AfterEach
+    void tearDown() {
+        List<User> users = userController.getAllUsers();
+        for (User user : users){
+            userController.deleteUser(user.getId());
+        }
     }
 
     @Test
     void getAllUsersTest() {
-        User userFirst = User.builder()
+        User firstUser = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name(NAME_FIRST)
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userSecond = User.builder()
+        User secondUser = User.builder()
                 .email(E_MAIL_SECOND)
                 .login(LOGIN_SECOND)
                 .name(NAME_SECOND)
                 .birthday(BIRTHDAY_SECOND)
                 .build();
 
-        User userCreatedFirst = userController.createUser(userFirst);
-        User userCreatedSecond = userController.createUser(userSecond);
+        User firstCreatedUser = userController.createUser(firstUser);
+        User secondCreatedUser = userController.createUser(secondUser);
 
-        List<User> expectedUsers = new ArrayList<>(List.of(userCreatedFirst, userCreatedSecond));
-
+        List<User> expectedUsers = Arrays.asList(firstCreatedUser, secondCreatedUser);
         List<User> actualUsers = userController.getAllUsers();
+
         assertEquals(expectedUsers, actualUsers);
     }
 
+
     @Test
     void createUserTest() {
-        User user = User.builder()
+        User expectedUser = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
                 .name(NAME_FIRST)
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(user);
+        User actualUser = userController.createUser(expectedUser);
 
-        assertEquals(user, userCreated);
+        assertEquals(expectedUser, actualUser);
     }
 
     @Test
@@ -96,10 +98,11 @@ class UserControllerTest {
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(user);
-        User userGot = userController.getUser(userCreated.getId());
+        User createdUser = userController.createUser(user);
 
-        assertEquals(userCreated, userGot);
+        User actualUser = userController.getUser(createdUser.getId()).get();
+
+        assertEquals(createdUser, actualUser);
     }
 
     @Test
@@ -111,23 +114,23 @@ class UserControllerTest {
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(user);
+        User createdUser = userController.createUser(user);
 
-        User friend = User.builder()
+        User friendUser = User.builder()
                 .email(E_MAIL_SECOND)
                 .login(LOGIN_SECOND)
                 .name(NAME_SECOND)
                 .birthday(BIRTHDAY_SECOND)
                 .build();
 
-        User friendCreated = userController.createUser(friend);
+        User expectedFriend = userController.createUser(friendUser);
 
-        userController.addFriends(userCreated.getId(), friendCreated.getId());
+        userController.addFriends(createdUser.getId(), expectedFriend.getId());
+        List<User> friends = userController.getFriends(createdUser.getId());
 
-        User userWithFriend = userController.getUser(userCreated.getId());
-
-        assertTrue(userWithFriend.getFriends().contains(friendCreated.getId()));
+        assertTrue(friends.contains(expectedFriend));
     }
+
 
     @Test
     void removeFriendsTest() {
@@ -138,50 +141,25 @@ class UserControllerTest {
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(user);
+        User createdUser = userController.createUser(user);
 
-        User friend = User.builder()
+        User friendUser = User.builder()
                 .email(E_MAIL_SECOND)
                 .login(LOGIN_SECOND)
                 .name(NAME_SECOND)
                 .birthday(BIRTHDAY_SECOND)
                 .build();
 
-        User friendCreated = userController.createUser(friend);
+        User expectedFriend = userController.createUser(friendUser);
 
-        userController.addFriends(userCreated.getId(), friendCreated.getId());
-        userController.removeFriends(userCreated.getId(), friendCreated.getId());
+        userController.addFriends(createdUser.getId(), expectedFriend.getId());
+        userController.removeFriends(createdUser.getId(), expectedFriend.getId());
 
-        User userWithFriend = userController.getUser(userCreated.getId());
+        List<User> friends = userController.getFriends(createdUser.getId());
 
-        assertTrue(userWithFriend.getFriends().isEmpty());
+        assertFalse(friends.contains(expectedFriend));
     }
 
-    @Test
-    void getFriendsTest() {
-        User user = User.builder()
-                .email(E_MAIL_FIRST)
-                .login(LOGIN_FIRST)
-                .name(NAME_FIRST)
-                .birthday(BIRTHDAY_FIRST)
-                .build();
-
-        User userCreated = userController.createUser(user);
-
-        User friend = User.builder()
-                .email(E_MAIL_SECOND)
-                .login(LOGIN_SECOND)
-                .name(NAME_SECOND)
-                .birthday(BIRTHDAY_SECOND)
-                .build();
-
-        User friendCreated = userController.createUser(friend);
-
-        userController.addFriends(userCreated.getId(), friendCreated.getId());
-        List<User> friends = userController.getFriends(userCreated.getId());
-
-        assertTrue(friends.contains(friendCreated));
-    }
 
     @Test
     void getCommonFriendsTest() {
@@ -192,32 +170,34 @@ class UserControllerTest {
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(user);
+        User createdUser = userController.createUser(user);
 
-        User friend = User.builder()
+        User friendUser = User.builder()
                 .email(E_MAIL_SECOND)
                 .login(LOGIN_SECOND)
                 .name(NAME_SECOND)
                 .birthday(BIRTHDAY_SECOND)
                 .build();
 
-        User friendCreated = userController.createUser(friend);
+        User friendCreatedUser = userController.createUser(friendUser);
 
-        User commonFriend = User.builder()
+        User commonFriendUser = User.builder()
                 .email(E_MAIL_COMMON)
                 .login(LOGIN_COMMON)
                 .name(NAME_COMMON)
                 .birthday(BIRTHDAY_COMMON)
                 .build();
 
-        User commonFriendCreated = userController.createUser(commonFriend);
+        User commonFriendCreatedUser = userController.createUser(commonFriendUser);
 
-        userController.addFriends(userCreated.getId(), commonFriendCreated.getId());
-        userController.addFriends(commonFriendCreated.getId(), friendCreated.getId());
+        userController.addFriends(createdUser.getId(), commonFriendCreatedUser.getId());
+        userController.addFriends(commonFriendCreatedUser.getId(), createdUser.getId());
+        userController.addFriends(commonFriendCreatedUser.getId(), friendCreatedUser.getId());
+        userController.addFriends(friendCreatedUser.getId(), commonFriendCreatedUser.getId());
 
-        List<User> friends = userController.getCommonFriends(userCreated.getId(), friendCreated.getId());
+        List<User> friends = userController.getCommonFriends(createdUser.getId(), friendCreatedUser.getId());
 
-        assertTrue(friends.contains(commonFriendCreated));
+        assertTrue(friends.contains(commonFriendCreatedUser));
     }
 
     @Test
@@ -269,7 +249,7 @@ class UserControllerTest {
     }
 
     @Test
-    void updateUser() {
+    void updateUserTest() {
         User user = User.builder()
                 .email(E_MAIL_FIRST)
                 .login(LOGIN_FIRST)
@@ -277,14 +257,14 @@ class UserControllerTest {
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        User userCreated = userController.createUser(user);
-        userCreated.setLogin(LOGIN_SECOND);
-        userCreated.setEmail(E_MAIL_SECOND);
-        userCreated.setName(NAME_SECOND);
-        userCreated.setBirthday(BIRTHDAY_SECOND);
-        User userUpdated = userController.updateUser(userCreated);
+        User expectedUser = userController.createUser(user);
+        expectedUser.setLogin(LOGIN_SECOND);
+        expectedUser.setEmail(E_MAIL_SECOND);
+        expectedUser.setName(NAME_SECOND);
+        expectedUser.setBirthday(BIRTHDAY_SECOND);
+        User actualUpdated = userController.updateUser(expectedUser);
 
-        assertEquals(userCreated, userUpdated);
+        assertEquals(expectedUser, actualUpdated);
     }
 
     @Test

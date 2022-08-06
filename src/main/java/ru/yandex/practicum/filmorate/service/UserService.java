@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -10,34 +10,28 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private static Long nextId = 0L;
     private final UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
 
     public List<User> getAllUsers() {
         return userStorage.getAllUsers();
     }
 
-    public User getUser(Long id) {
+    public Optional<User> getUser(Long id) {
         validateUserExist(id);
         return userStorage.getUser(id);
     }
 
     public User createUser(User user) {
         validate(user);
-        user.setId(++nextId);
-        user.setFriends(new HashSet<>());
+//        user.setId(++nextId);
         return userStorage.createUser(user);
     }
 
@@ -47,16 +41,21 @@ public class UserService {
         return userStorage.updateUser(user);
     }
 
-    public User addFriends(Long userId, Long friendId) {
-        validateUserExist(userId);
-        validateUserExist(friendId);
-        return userStorage.addFriends(userId, friendId);
+    public void deleteUser(Long id) {
+        validateUserExist(id);
+        userStorage.deleteUser(id);
     }
 
-    public User removeFriends(Long userId, Long friendId) {
+    public void addFriends(Long userId, Long friendId) {
         validateUserExist(userId);
         validateUserExist(friendId);
-        return userStorage.removeFriends(userId, friendId);
+        userStorage.addFriends(userId, friendId);
+    }
+
+    public void removeFriends(Long userId, Long friendId) {
+        validateUserExist(userId);
+        validateUserExist(friendId);
+        userStorage.removeFriends(userId, friendId);
     }
 
     public List<User> getFriends(Long userId) {
@@ -67,7 +66,8 @@ public class UserService {
     public List<User> getCommonFriends(long id, long otherId) {
         validateUserExist(id);
         validateUserExist(otherId);
-        return userStorage.getCommonFriends(id, otherId);
+        return userStorage
+                .getCommonFriends(id, otherId);
     }
 
     private void validate(User user) throws ValidationException {

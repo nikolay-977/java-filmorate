@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class Friendship {
-    private Integer userId;
-    private Integer friendId;
-    private Boolean status;
+    private Long userId;
+    private Long friendId;
+    private FriendshipStatus friendshipStatus;
 }

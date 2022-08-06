@@ -1,34 +1,36 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.apache.commons.lang.RandomStringUtils;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 class FilmControllerTest {
+
+    private final FilmController filmController;
+    private final UserController userController;
     private static final String NAME_FIRST = RandomStringUtils.randomAlphabetic(5);
     private static final String NAME_SECOND = RandomStringUtils.randomAlphabetic(10);
     private static final String DESCRIPTION_FIRST = RandomStringUtils.randomAlphabetic(200);
@@ -40,41 +42,39 @@ class FilmControllerTest {
     private static final String E_MAIL_FIRST = RandomStringUtils.randomAlphabetic(10) + "@" + RandomStringUtils.randomAlphabetic(10) + ".com";
     private static final String LOGIN_FIRST = RandomStringUtils.randomAlphabetic(10);
     private static final LocalDate BIRTHDAY_FIRST = LocalDate.of(1988, 1, 1);
-    private static FilmStorage filmStorage;
-    private static FilmService filmService;
-    private static FilmController filmController;
-    private static UserStorage userStorage;
-    private static UserService userService;
-    private static UserController userController;
 
-    @BeforeEach
-    void init() {
-        filmStorage = new InMemoryFilmStorage();
-        userStorage = new InMemoryUserStorage();
-        filmService = new FilmService(filmStorage, userStorage);
-        filmController = new FilmController(filmService);
+    @AfterEach
+    void tearDown() {
+        List<Film> films = filmController.getAllFilms();
+        for (Film film : films) {
+            filmController.deleteFilm(film.getId());
+        }
     }
 
     @Test
     void getAllFilmsTest() {
-        Film filmOne = Film.builder()
+        Film firstFilm = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
                 .duration(DURATION_FIRST)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
                 .build();
 
-        Film filmTwo = Film.builder()
+        Film secondFilm = Film.builder()
                 .name(NAME_SECOND)
                 .description(DESCRIPTION_SECOND)
                 .releaseDate(RELEASE_DATE_SECOND)
                 .duration(DURATION_SECOND)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
                 .build();
 
-        Film filmOneCreated = filmController.createFilm(filmOne);
-        Film filmTwoCreated = filmController.createFilm(filmTwo);
+        Film firstCreatedFilm = filmController.createFilm(firstFilm);
+        Film secondCreatedFilm = filmController.createFilm(secondFilm);
 
-        List<Film> expectedFilms = new ArrayList<>(List.of(filmOneCreated, filmTwoCreated));
+        List<Film> expectedFilms = List.of(firstCreatedFilm, secondCreatedFilm);
 
         List<Film> actualFilms = filmController.getAllFilms();
         assertEquals(expectedFilms, actualFilms);
@@ -82,11 +82,17 @@ class FilmControllerTest {
 
     @Test
     void createFilmTest() {
+        HashSet<Genre> genres = new HashSet<>();
+        genres.add(Genre.builder().id(1l).build());
+
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
                 .duration(DURATION_FIRST)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
+                .genres(genres)
                 .build();
 
         Film filmCreated = filmController.createFilm(film);
@@ -96,11 +102,17 @@ class FilmControllerTest {
 
     @Test
     void getFilmTest() {
+        HashSet<Genre> genres = new HashSet<>();
+        genres.add(Genre.builder().id(1l).build());
+
         Film film = Film.builder()
                 .name(NAME_FIRST)
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
                 .duration(DURATION_FIRST)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
+                .genres(genres)
                 .build();
 
         Film expectedFilm = filmController.createFilm(film);
@@ -116,6 +128,8 @@ class FilmControllerTest {
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
                 .duration(DURATION_FIRST)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
                 .build();
 
         Film filmCreated = filmController.createFilm(film);
@@ -136,6 +150,8 @@ class FilmControllerTest {
                 .description(DESCRIPTION_SECOND)
                 .releaseDate(RELEASE_DATE_SECOND)
                 .duration(DURATION_SECOND)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
                 .build();
 
         final NotFoundException[] notFoundExceptions = new NotFoundException[1];
@@ -152,6 +168,8 @@ class FilmControllerTest {
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
                 .duration(DURATION_FIRST)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
                 .build();
 
         Film filmCreated = filmController.createFilm(film);
@@ -163,13 +181,10 @@ class FilmControllerTest {
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        userService = new UserService(userStorage);
-        userController = new UserController(userService);
-
         User userCreated = userController.createUser(user);
 
-        Film filmWithLike = filmController.addLike(filmCreated.getId(), userCreated.getId());
-        assertTrue(filmWithLike.getLikes().contains(userCreated.getId()));
+        List<User> userList = filmController.addLike(filmCreated.getId(), userCreated.getId());
+        assertTrue(userList.contains(userCreated));
     }
 
     @Test
@@ -179,6 +194,8 @@ class FilmControllerTest {
                 .description(DESCRIPTION_FIRST)
                 .releaseDate(RELEASE_DATE_FIRST)
                 .duration(DURATION_FIRST)
+                .rate(4L)
+                .mpa(Mpa.builder().id(1L).build())
                 .build();
 
         Film filmCreated = filmController.createFilm(film);
@@ -190,79 +207,11 @@ class FilmControllerTest {
                 .birthday(BIRTHDAY_FIRST)
                 .build();
 
-        userService = new UserService(userStorage);
-        userController = new UserController(userService);
-
         User userCreated = userController.createUser(user);
 
-        Film filmWithLike = filmController.removeLike(filmCreated.getId(), userCreated.getId());
-        assertTrue(filmWithLike.getLikes().isEmpty());
-    }
-
-    @Test
-    void getPopularFilmTest() {
-        Film film = Film.builder()
-                .name(NAME_FIRST)
-                .description(DESCRIPTION_FIRST)
-                .releaseDate(RELEASE_DATE_FIRST)
-                .duration(DURATION_FIRST)
-                .build();
-
-        Film filmCreated = filmController.createFilm(film);
-
-        User user = User.builder()
-                .email(E_MAIL_FIRST)
-                .login(LOGIN_FIRST)
-                .name(NAME_FIRST)
-                .birthday(BIRTHDAY_FIRST)
-                .build();
-
-        userService = new UserService(userStorage);
-        userController = new UserController(userService);
-
-        User userCreated = userController.createUser(user);
-
-        Film filmWithLike = filmController.addLike(filmCreated.getId(), userCreated.getId());
-        List<Film> popularFilmList = filmController.getPopularFilm(1L);
-        assertTrue(popularFilmList.contains(filmWithLike));
-    }
-
-    @Test
-    void getPopularFilmCountTwoTest() {
-        Film filmOne = Film.builder()
-                .name(NAME_FIRST)
-                .description(DESCRIPTION_FIRST)
-                .releaseDate(RELEASE_DATE_FIRST)
-                .duration(DURATION_FIRST)
-                .build();
-
-        Film filmOneCreated = filmController.createFilm(filmOne);
-
-        Film filmTwo = Film.builder()
-                .name(NAME_FIRST)
-                .description(DESCRIPTION_FIRST)
-                .releaseDate(RELEASE_DATE_FIRST)
-                .duration(DURATION_FIRST)
-                .build();
-
-        Film filmTwoCreated = filmController.createFilm(filmTwo);
-
-        User user = User.builder()
-                .email(E_MAIL_FIRST)
-                .login(LOGIN_FIRST)
-                .name(NAME_FIRST)
-                .birthday(BIRTHDAY_FIRST)
-                .build();
-
-        userService = new UserService(userStorage);
-        userController = new UserController(userService);
-
-        User userCreated = userController.createUser(user);
-
-        Film filmWithLike = filmController.addLike(filmOneCreated.getId(), userCreated.getId());
-        List<Film> popularFilmList = filmController.getPopularFilm(2L);
-        assertTrue(popularFilmList.contains(filmWithLike));
-        assertTrue(popularFilmList.contains(filmTwoCreated));
+        filmController.addLike(filmCreated.getId(), userCreated.getId());
+        List<User> userList = filmController.removeLike(filmCreated.getId(), userCreated.getId());
+        assertFalse(userList.contains(userCreated));
     }
 
     @ParameterizedTest
@@ -283,6 +232,8 @@ class FilmControllerTest {
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(RELEASE_DATE_FIRST)
                                 .duration(DURATION_FIRST)
+                                .rate(4L)
+                                .mpa(Mpa.builder().id(1L).build())
                                 .build())
                         .expectedMessage("Название не может быть пустым")
                         .checkName("Пустое название")
@@ -293,6 +244,8 @@ class FilmControllerTest {
                                 .description(DESCRIPTION_FIRST + "i")
                                 .releaseDate(RELEASE_DATE_FIRST)
                                 .duration(DURATION_FIRST)
+                                .rate(4L)
+                                .mpa(Mpa.builder().id(1L).build())
                                 .build())
                         .expectedMessage("Максимальная длина описания — 200 символов")
                         .checkName("201 символ")
@@ -303,6 +256,8 @@ class FilmControllerTest {
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(LocalDate.of(1895, 12, 27))
                                 .duration(DURATION_FIRST)
+                                .rate(4L)
+                                .mpa(Mpa.builder().id(1L).build())
                                 .build())
                         .expectedMessage("Дата релиза должна быть не раньше 28 декабря 1895 года")
                         .checkName("Дата релиза 27 декабря 1895 года")
@@ -313,6 +268,8 @@ class FilmControllerTest {
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(RELEASE_DATE_FIRST)
                                 .duration(-1L)
+                                .rate(4L)
+                                .mpa(Mpa.builder().id(1L).build())
                                 .build())
                         .expectedMessage("Продолжительность фильма должна быть положительной")
                         .checkName("Отрицательная продолжительность фильма")
@@ -323,6 +280,8 @@ class FilmControllerTest {
                                 .description(DESCRIPTION_FIRST)
                                 .releaseDate(RELEASE_DATE_FIRST)
                                 .duration(0L)
+                                .rate(4L)
+                                .mpa(Mpa.builder().id(1L).build())
                                 .build())
                         .expectedMessage("Продолжительность фильма должна быть положительной")
                         .checkName("Нулевая продолжительность фильма")
