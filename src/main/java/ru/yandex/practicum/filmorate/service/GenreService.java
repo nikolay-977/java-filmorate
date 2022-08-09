@@ -21,13 +21,15 @@ public class GenreService {
     public List<Genre> getAllGenres() {
         return genreStorage.getAllGenres();
     }
+
     public Optional<Genre> getGenre(Long id) {
         validateGenreExist(id);
         return genreStorage.getGenre(id);
     }
 
     private void validateGenreExist(Long id) {
-        boolean isContainsId = genreStorage.getAllGenres().stream().map(Genre::getId)
+        boolean isContainsId = genreStorage.getAllGenres().stream()
+                .map(Genre::getId)
                 .collect(Collectors.toList()).contains(id);
         if (!isContainsId) {
             log.warn(MessageFormat.format("Жанр c id: {0} не существует", id));

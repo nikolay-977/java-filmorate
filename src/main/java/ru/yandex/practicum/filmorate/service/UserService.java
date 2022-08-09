@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.text.MessageFormat;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendsStorage friendsStorage;
 
     public List<User> getAllUsers() {
         return userStorage.getAllUsers();
@@ -31,7 +33,6 @@ public class UserService {
 
     public User createUser(User user) {
         validate(user);
-//        user.setId(++nextId);
         return userStorage.createUser(user);
     }
 
@@ -49,25 +50,24 @@ public class UserService {
     public void addFriends(Long userId, Long friendId) {
         validateUserExist(userId);
         validateUserExist(friendId);
-        userStorage.addFriends(userId, friendId);
+        friendsStorage.addFriends(userId, friendId);
     }
 
     public void removeFriends(Long userId, Long friendId) {
         validateUserExist(userId);
         validateUserExist(friendId);
-        userStorage.removeFriends(userId, friendId);
+        friendsStorage.removeFriends(userId, friendId);
     }
 
     public List<User> getFriends(Long userId) {
         validateUserExist(userId);
-        return userStorage.getFriends(userId);
+        return friendsStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
         validateUserExist(id);
         validateUserExist(otherId);
-        return userStorage
-                .getCommonFriends(id, otherId);
+        return friendsStorage.getCommonFriends(id, otherId);
     }
 
     private void validate(User user) throws ValidationException {
