@@ -1,32 +1,20 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
-import lombok.Data;
-
 import java.time.LocalDate;
 import java.util.HashSet;
 
+import lombok.Builder;
+import lombok.Data;
+
 @Data
 @Builder
-public class Film {
-    private Long id;
-    private String name;
-    private String description;
-    private LocalDate releaseDate;
-    private Long duration;
-    private HashSet<Long> likes;
-
-    public int countLikes() {
-        if (likes == null) {
-            return 0;
-        } else return likes.size();
-    }
-
-    public void addLike(Long userId) {
-        likes.add(userId);
-    }
-
-    public void removeLike(Long userId) {
-        likes.remove(userId);
-    }
+public class Film{
+	private Long duration;
+	private LocalDate releaseDate;
+	private Long rate;
+	private HashSet<Genre> genres;
+	private String name;
+	private String description;
+	private Long id;
+	private Mpa mpa;
 }
